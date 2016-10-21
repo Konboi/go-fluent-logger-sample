@@ -1,3 +1,6 @@
+//go:generate msgp
+//msgp:ignore Logger
+
 package main
 
 import (
