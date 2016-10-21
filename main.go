@@ -57,19 +57,23 @@ func main() {
 			UpdatedAt: time.Now().Unix(),
 		}
 
-		logger.Post(tag, &p, &pc)
+		err := logger.Post(tag, &p, &pc)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	log.Println("done")
 }
 
-func (logger Logger) Post(tag string, vs ...interface{}) {
+func (logger Logger) Post(tag string, vs ...interface{}) error {
 	postData := make(map[string]interface{}, len(vs))
 
 	for _, v := range vs {
 		rt := reflect.TypeOf(v)
+
 		if rv := reflect.ValueOf(v); rv.Kind() != reflect.Ptr {
-			log.Println("Need vs is pointer")
+			return fmt.Errorf("v is not pointer")
 		}
 
 		postData[snaker.CamelToSnake(fmt.Sprintf("%s", rt.Elem().Name()))] = v
@@ -77,5 +81,8 @@ func (logger Logger) Post(tag string, vs ...interface{}) {
 	err := logger.Fluent.Post(tag, postData)
 	if err != nil {
 		log.Println(tag, "post data  error", err)
+		return err
 	}
+
+	return nil
 }
