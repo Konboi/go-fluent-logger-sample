@@ -11,6 +11,7 @@ import (
 
 	"github.com/fluent/fluent-logger-golang/fluent"
 	"github.com/mattn/go-gimei"
+	"github.com/serenize/snaker"
 )
 
 type Player struct {
@@ -56,31 +57,25 @@ func main() {
 			UpdatedAt: time.Now().Unix(),
 		}
 
-		logger.Post(tag, p, pc)
+		logger.Post(tag, &p, &pc)
 	}
 
 	log.Println("done")
 }
 
 func (logger Logger) Post(tag string, vs ...interface{}) {
-
 	postData := make(map[string]interface{}, len(vs))
-	log.Printf("%T", postData)
 
 	for _, v := range vs {
 		rt := reflect.TypeOf(v)
-
-		t := fmt.Sprintf("%s.%s.%s", tag, rt.PkgPath(), rt.Name())
-		postData[fmt.Sprintf("%s.%s", rt.PkgPath(), rt.Name())] = v
-		err := logger.Fluent.Post(t, v)
-		if err != nil {
-			log.Println(t, "post error", err)
+		if rv := reflect.ValueOf(v); rv.Kind() != reflect.Ptr {
+			log.Println("Need vs is pointer")
 		}
-	}
 
+		postData[snaker.CamelToSnake(fmt.Sprintf("%s", rt.Elem().Name()))] = v
+	}
 	err := logger.Fluent.Post(tag, postData)
 	if err != nil {
-		log.Println("postData post error", err)
+		log.Println(tag, "post data  error", err)
 	}
-
 }

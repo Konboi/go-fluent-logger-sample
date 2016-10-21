@@ -3,3 +3,4 @@ import:
   - package: github.com/fluent/fluent-logger-golang/fluent
   - package: github.com/mattn/go-gimei
   - package: github.com/tinylib/msgp
+  - package: github.com/serenize/snaker
